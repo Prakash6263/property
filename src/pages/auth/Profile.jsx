@@ -1,6 +1,7 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useAuth, ROLE_LABELS } from '../../context/AuthContext';
 import { DashLayout, PageHeader } from '../../components/common/DashboardComponents';
+import { fetchUserProfile, updateUserProfile } from '../../services/userService';
 import Swal from 'sweetalert2';
 
 export default function Profile() {
@@ -13,6 +14,46 @@ export default function Profile() {
   const [whatsappNumber, setWhatsappNumber] = useState(user?.whatsapp_number || '');
   const [nationality, setNationality] = useState(user?.nationality || '');
   const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [profileData, setProfileData] = useState(user || {});
+
+  // Fetch user profile from API on component mount
+  useEffect(() => {
+    const loadUserProfile = async () => {
+      try {
+        setLoading(true);
+        const data = await fetchUserProfile();
+        console.log('[v0] User profile fetched:', data);
+        
+        // Update local state with fetched data
+        setProfileData(data);
+        setFullName(data?.full_name || '');
+        setPhoneNumber(data?.phone_number || '');
+        setWhatsappNumber(data?.whatsapp_number || '');
+        setNationality(data?.nationality || '');
+        
+        // Update auth context with fetched data
+        const updatedUser = {
+          ...user,
+          ...data,
+          name: data?.full_name,
+        };
+        login(updatedUser);
+      } catch (error) {
+        console.error('[v0] Failed to load user profile:', error);
+        Swal.fire({
+          title: 'Error',
+          text: 'Failed to load profile. Please try again.',
+          icon: 'error',
+          confirmButtonColor: '#002B5C'
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadUserProfile();
+  }, []);
 
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
@@ -46,7 +87,7 @@ export default function Profile() {
     }
   };
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
     if (!fullName.trim()) {
       Swal.fire({
@@ -58,28 +99,66 @@ export default function Profile() {
       return;
     }
 
-    // Update context user object
-    const updatedUser = {
-      ...user,
-      avatar: avatar,
-      full_name: fullName,
-      name: fullName, // mapping for header compatibility
-      phone_number: phoneNumber,
-      whatsapp_number: whatsappNumber,
-      nationality: nationality
-    };
+    try {
+      setLoading(true);
+      
+      // Prepare update payload
+      const updatePayload = {
+        full_name: fullName,
+        phone_number: phoneNumber,
+        whatsapp_number: whatsappNumber,
+        nationality: nationality || null,
+      };
 
-    login(updatedUser);
-    setIsEditing(false);
+      // Call API to update profile
+      const updatedData = await updateUserProfile(updatePayload);
+      console.log('[v0] Profile updated:', updatedData);
 
-    Swal.fire({
-      title: 'Success!',
-      text: 'Profile updated successfully.',
-      icon: 'success',
-      timer: 1500,
-      showConfirmButton: false
-    });
+      // Update context user object
+      const updatedUser = {
+        ...user,
+        ...updatedData,
+        avatar: avatar,
+        name: updatedData?.full_name || fullName,
+      };
+
+      login(updatedUser);
+      setProfileData(updatedData);
+      setIsEditing(false);
+
+      Swal.fire({
+        title: 'Success!',
+        text: 'Profile updated successfully.',
+        icon: 'success',
+        timer: 1500,
+        showConfirmButton: false
+      });
+    } catch (error) {
+      console.error('[v0] Error updating profile:', error);
+      Swal.fire({
+        title: 'Error',
+        text: error.message || 'Failed to update profile. Please try again.',
+        icon: 'error',
+        confirmButtonColor: '#002B5C'
+      });
+    } finally {
+      setLoading(false);
+    }
   };
+
+  if (loading && !profileData?.id) {
+    return (
+      <DashLayout>
+        <PageHeader title="My Profile" sub="Manage your profile details" />
+        <div className="text-center py-5">
+          <div className="spinner-border" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+          <p className="text-muted mt-3">Loading profile...</p>
+        </div>
+      </DashLayout>
+    );
+  }
 
   return (
     <DashLayout>
@@ -119,10 +198,10 @@ export default function Profile() {
                   className="d-none" 
                 />
               </div>
-              <h4 className="fw-bold mb-1" style={{ color: '#002B5C' }}>{user?.name || 'User'}</h4>
-              <p className="text-muted small mb-3">{user?.email}</p>
+              <h4 className="fw-bold mb-1" style={{ color: '#002B5C' }}>{profileData?.full_name || user?.name || 'User'}</h4>
+              <p className="text-muted small mb-3">{profileData?.email || user?.email}</p>
               <span className="badge bg-turquoise rounded-pill px-3 py-2 fw-semibold" style={{ fontSize: '0.8rem' }}>
-                {ROLE_LABELS[user?.role] || user?.role || 'User'}
+                {ROLE_LABELS[profileData?.role] || profileData?.role || user?.role || 'User'}
               </span>
               
               <hr className="my-4" />
@@ -131,13 +210,13 @@ export default function Profile() {
                 <h6 className="fw-bold mb-2" style={{ color: '#002B5C' }}>Status:</h6>
                 <p className="small text-muted mb-3">
                   <span className="badge bg-success-light text-success px-2 py-1 rounded">
-                    {user?.status ? user.status.toUpperCase() : 'ACTIVE'}
+                    {profileData?.status ? profileData.status.toUpperCase() : 'ACTIVE'}
                   </span>
                 </p>
                 
                 <h6 className="fw-bold mb-2" style={{ color: '#002B5C' }}>Last Login:</h6>
                 <p className="small text-muted mb-0">
-                  {user?.last_login ? new Date(user.last_login).toLocaleString() : 'Just now'}
+                  {profileData?.last_login ? new Date(profileData.last_login).toLocaleString() : 'Just now'}
                 </p>
               </div>
             </div>
@@ -179,7 +258,7 @@ export default function Profile() {
                     <input 
                       type="email" 
                       className="form-control" 
-                      value={user?.email || ''} 
+                      value={profileData?.email || user?.email || ''} 
                       disabled 
                       style={{ borderRadius: 10, background: '#f8f9fa' }}
                     />
@@ -226,7 +305,7 @@ export default function Profile() {
                     <input 
                       type="text" 
                       className="form-control" 
-                      value={user?.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'} 
+                      value={profileData?.created_at ? new Date(profileData.created_at).toLocaleDateString() : user?.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'} 
                       disabled 
                       style={{ borderRadius: 10, background: '#f8f9fa' }}
                     />
