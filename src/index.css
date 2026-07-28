@@ -1,13 +1,450 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* 
+  Property Management Dashboard - Custom Styles
+  Extends the shipment project's style.css with property-specific overrides
+*/
+
+/* Theme overrides for Property Management */
+:root {
+  --pm-primary: #002B5C;
+  --pm-accent: #00B5AD;
+  --pm-accent-2: #00D2CB;
+  --pm-gradient: linear-gradient(90deg, #00B5AD, #00D2CB);
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+/* Status badges for property/tenant management */
+.badge-occupied { background-color: #28a745; color: #fff; }
+.badge-vacant   { background-color: #6c757d; color: #fff; }
+.badge-reserved { background-color: #ffc107; color: #000; }
+.badge-blocked  { background-color: #dc3545; color: #fff; }
+.badge-pending  { background-color: #fd7e14; color: #fff; }
+.badge-active   { background-color: #00B5AD; color: #fff; }
+.badge-overdue  { background-color: #dc3545; color: #fff; }
+.badge-paid     { background-color: #28a745; color: #fff; }
+
+/* WhatsApp-style inbox */
+.whatsapp-inbox {
+  display: flex;
+  height: calc(100vh - 120px);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.10);
 }
+.wa-sidebar {
+  width: 320px;
+  min-width: 260px;
+  border-right: 1px solid #e9ecef;
+  background: var(--card-bg);
+  display: flex;
+  flex-direction: column;
+}
+.wa-chat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #f0f0f0;
+}
+.wa-details {
+  width: 300px;
+  border-left: 1px solid #e9ecef;
+  background: var(--card-bg);
+  overflow-y: auto;
+}
+.wa-conv-item {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--text-border);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.wa-conv-item:hover, .wa-conv-item.active {
+  background: rgba(0,181,173,0.10);
+}
+.wa-message-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.wa-bubble-in {
+  background: #fff;
+  padding: 10px 14px;
+  border-radius: 0 12px 12px 12px;
+  max-width: 65%;
+  align-self: flex-start;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+}
+.wa-bubble-out {
+  background: linear-gradient(135deg, #00B5AD, #00D2CB);
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 12px 0 12px 12px;
+  max-width: 65%;
+  align-self: flex-end;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.12);
+}
+.wa-input-area {
+  padding: 12px 16px;
+  background: var(--card-bg);
+  border-top: 1px solid #e9ecef;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Calendar */
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+.cal-day {
+  border-radius: 8px;
+  padding: 5px 6px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: var(--card-bg);
+  border: 1px solid var(--text-border);
+  min-height: 52px;
+}
+.cal-day:hover { background: rgba(0,181,173,0.12); }
+.cal-day.today { border-color: #00B5AD; background: rgba(0,181,173,0.08); font-weight: 700; }
+.cal-event { 
+  font-size: 0.68rem; 
+  padding: 2px 4px; 
+  border-radius: 4px; 
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* KPI Card colors (property management palette) */
+.card-pm-blue   { border-left: 4px solid #004aad; }
+.card-pm-teal   { border-left: 4px solid #00B5AD; }
+.card-pm-orange { border-left: 4px solid #fd7e14; }
+.card-pm-green  { border-left: 4px solid #28a745; }
+.card-pm-red    { border-left: 4px solid #dc3545; }
+.card-pm-purple { border-left: 4px solid #6f42c1; }
+
+/* Step form */
+.step-indicator {
+  display: flex;
+  gap: 0;
+  margin-bottom: 28px;
+}
+.step-item {
+  flex: 1;
+  text-align: center;
+  position: relative;
+}
+.step-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #e9ecef;
+  color: #6c757d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 6px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  transition: all 0.3s;
+}
+.step-item.active .step-circle {
+  background: var(--pm-gradient);
+  color: #fff;
+}
+.step-item.completed .step-circle {
+  background: #28a745;
+  color: #fff;
+}
+.step-line {
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  right: -50%;
+  height: 2px;
+  background: #e9ecef;
+  z-index: 0;
+}
+.step-item.completed .step-line { background: #28a745; }
+
+/* Permission matrix table */
+.perm-matrix th, .perm-matrix td {
+  text-align: center;
+  vertical-align: middle;
+  font-size: 0.85rem;
+}
+.perm-matrix td:first-child { text-align: left; }
+
+/* AI chat assistant */
+.ai-chat-container {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 180px);
+}
+.ai-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  background: var(--bg-body);
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+.ai-bubble-user {
+  background: var(--pm-gradient);
+  color: #fff;
+  padding: 12px 16px;
+  border-radius: 18px 18px 4px 18px;
+  max-width: 70%;
+  margin-left: auto;
+  margin-bottom: 12px;
+}
+.ai-bubble-bot {
+  background: var(--card-bg);
+  padding: 12px 16px;
+  border-radius: 18px 18px 18px 4px;
+  max-width: 80%;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+}
+
+/* Animated gradient heading */
+.gradient-word {
+  background: var(--pm-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Property card */
+.property-card {
+  border-radius: 12px;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.property-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.13);
+}
+.property-card img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+}
+
+/* Ticket priority badges */
+.priority-low    { color: #28a745; background: rgba(40,167,69,0.1);  padding: 2px 8px; border-radius: 20px; font-size: 0.78rem; }
+.priority-medium { color: #ffc107; background: rgba(255,193,7,0.1);  padding: 2px 8px; border-radius: 20px; font-size: 0.78rem; }
+.priority-high   { color: #fd7e14; background: rgba(253,126,20,0.1); padding: 2px 8px; border-radius: 20px; font-size: 0.78rem; }
+.priority-urgent { color: #dc3545; background: rgba(220,53,69,0.1);  padding: 2px 8px; border-radius: 20px; font-size: 0.78rem; }
+
+/* Staff workload card */
+.staff-card {
+  border-radius: 10px;
+  padding: 16px;
+  background: var(--card-bg);
+  border: 1px solid var(--text-border);
+  transition: box-shadow 0.2s;
+}
+.staff-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.10); }
+
+/* Activity timeline */
+.timeline {
+  position: relative;
+  padding-left: 28px;
+}
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 10px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #e9ecef;
+}
+.timeline-item {
+  position: relative;
+  margin-bottom: 20px;
+}
+.timeline-dot {
+  position: absolute;
+  left: -24px;
+  top: 4px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #00B5AD;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 2px #00B5AD;
+}
+
+/* Smooth transitions for all interactive elements */
+.btn, .card, .nav-link, input, select, textarea {
+  transition: all 0.2s ease;
+}
+
+/* Notification badge */
+.notif-dot {
+  width: 8px;
+  height: 8px;
+  background: #dc3545;
+  border-radius: 50%;
+  display: inline-block;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+/* Dark mode overrides for property components */
+[data-theme="dark"] .wa-chat { background: #1a1a2e; }
+[data-theme="dark"] .wa-bubble-in { background: #002b5c; color: #fff; }
+[data-theme="dark"] .cal-day { background: #002b5c; border-color: #2b446a; }
+[data-theme="dark"] .ai-bubble-bot { background: #002b5c; color: #fff; }
+[data-theme="dark"] .staff-card { background: #002b5c; border-color: #2b446a; }
+
+/* Table headers styling override for visibility */
+.table thead th {
+  color: #ffffff !important;
+  background-color: #002B5C !important;
+  font-weight: 600;
+  border-bottom: 2px solid #00B5AD !important;
+  padding: 12px 16px !important;
+}
+
+/* Sidebar active items text visibility override */
+.sidebar .sidebar-menu ul li a:hover,
+.sidebar .sidebar-menu ul li a:hover span,
+.sidebar .sidebar-menu ul li a:hover i,
+.sidebar .sidebar-menu ul li.active > a,
+.sidebar .sidebar-menu ul li.active > a span,
+.sidebar .sidebar-menu ul li.active > a i,
+.sidebar .sidebar-menu ul li.submenu.active > a,
+.sidebar .sidebar-menu ul li.submenu.active > a span,
+.sidebar .sidebar-menu ul li.submenu.active > a i,
+.sidebar .sidebar-menu ul li a.active,
+.sidebar .sidebar-menu ul li a.active span,
+.sidebar .sidebar-menu ul li a.active i,
+.sidebar .sidebar-menu ul li a.subdrop,
+.sidebar .sidebar-menu ul li a.subdrop span,
+.sidebar .sidebar-menu ul li a.subdrop i {
+  color: #ffffff !important;
+}
+
+/* Sidebar submenu item text colors override */
+.sidebar .sidebar-menu ul li.submenu ul li a {
+  color: #abb9e8 !important;
+}
+.sidebar .sidebar-menu ul li.submenu ul li a:hover,
+.sidebar .sidebar-menu ul li.submenu ul li a.active {
+  color: #ffffff !important;
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* =====================================================
+   FIX: Sidebar Submenu Styles matching original reference
+   ===================================================== */
+
+/* 1. Parent Submenu Header - Teal gradient when active, open, or having active child */
+.sidebar .sidebar-menu ul li.submenu > a.active,
+.sidebar .sidebar-menu ul li.submenu > a.subdrop,
+.sidebar .sidebar-menu ul li.submenu.active > a {
+  background: linear-gradient(90deg, #00B5AD, #00D2CB) !important;
+  color: #ffffff !important;
+  border-radius: 10px !important;
+  box-shadow: 0 4px 15px rgba(0, 181, 173, 0.2);
+}
+
+/* Ensure text, icon and chevron color inside active parent header remain white */
+.sidebar .sidebar-menu ul li.submenu > a.active span,
+.sidebar .sidebar-menu ul li.submenu > a.subdrop span,
+.sidebar .sidebar-menu ul li.submenu.active > a span,
+.sidebar .sidebar-menu ul li.submenu > a.active i,
+.sidebar .sidebar-menu ul li.submenu > a.subdrop i,
+.sidebar .sidebar-menu ul li.submenu.active > a i,
+.sidebar .sidebar-menu ul li.submenu > a.active .menu-arrow,
+.sidebar .sidebar-menu ul li.submenu > a.subdrop .menu-arrow,
+.sidebar .sidebar-menu ul li.submenu.active > a .menu-arrow {
+  color: #ffffff !important;
+}
+
+.sidebar .sidebar-menu ul li.submenu > a.active .menu-arrow::before,
+.sidebar .sidebar-menu ul li.submenu > a.subdrop .menu-arrow::before,
+.sidebar .sidebar-menu ul li.submenu.active > a .menu-arrow::before {
+  border-color: #ffffff !important;
+}
+
+/* Kill all ::before / ::after purple or teal indicators from child menu items */
+.sidebar .sidebar-menu ul li.submenu ul li a::before,
+.sidebar .sidebar-menu ul li.submenu ul li a::after,
+.sidebar .sidebar-menu ul li.submenu ul li a.active::before,
+.sidebar .sidebar-menu ul li.submenu ul li a.active::after {
+  display: none !important;
+  content: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+}
+
+/* Kill ::before / ::after from parent submenu when it's open/active */
+.sidebar .sidebar-menu ul li.submenu > a::before,
+.sidebar .sidebar-menu ul li.submenu > a::after {
+  display: none !important;
+  content: none !important;
+}
+
+/* 2. Child Submenu Links - Always transparent background (no active teal highlight) */
+.sidebar .sidebar-menu ul li.submenu ul li a,
+.sidebar .sidebar-menu ul li.submenu ul li a.active,
+.sidebar .sidebar-menu ul li.submenu ul li a:hover {
+  background: transparent !important;
+  background-color: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding-left: 45px !important; /* Proper indent from parent */
+}
+
+/* Indent text and keep colors clean: white when active/hovered, bright soft white when inactive */
+.sidebar .sidebar-menu ul li.submenu ul li a {
+  color: rgba(255, 255, 255, 0.75) !important;
+}
+.sidebar .sidebar-menu ul li.submenu ul li a.active,
+.sidebar .sidebar-menu ul li.submenu ul li a:hover {
+  color: #ffffff !important;
+  font-weight: 600 !important;
+}
+
+/* =====================================================
+   FIX: Make Sidebar natively scrollable in React
+   ===================================================== */
+.sidebar {
+  overflow-y: auto !important;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 181, 173, 0.4) transparent;
+}
+
+.sidebar-inner {
+  height: auto !important;
+  overflow-y: visible !important;
+}
+
+/* Chrome, Edge, Safari scrollbar customization */
+.sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 181, 173, 0.35);
+  border-radius: 10px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 181, 173, 0.6);
+}
+
