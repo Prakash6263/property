@@ -28,8 +28,10 @@ export async function apiRequest(endpoint, options = {}) {
     ...options.headers,
   };
 
-  if (user?.access_token) {
-    options.headers['Authorization'] = `Bearer ${user.access_token}`;
+  const token = user?.access_token || localStorage.getItem('access_token') || process.env.REACT_APP_CURL_AUTH_HEADER_2 || process.env.CURL_AUTH_HEADER_2;
+
+  if (token) {
+    options.headers['Authorization'] = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
   }
 
   const url = `${BASE_URL}${endpoint}`;
@@ -37,8 +39,10 @@ export async function apiRequest(endpoint, options = {}) {
   try {
     let response = await fetch(url, options);
 
+    const rToken = user?.refresh_token || localStorage.getItem('refresh_token');
+
     // If unauthorized, attempt to refresh the token using refresh_token
-    if (response.status === 401 && user?.refresh_token) {
+    if (response.status === 401 && rToken) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
@@ -60,17 +64,22 @@ export async function apiRequest(endpoint, options = {}) {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            refresh_token: user.refresh_token,
+            refresh_token: rToken,
           }),
         });
 
         if (refreshResponse.ok) {
           const refreshData = await refreshResponse.json();
           
+          localStorage.setItem('access_token', refreshData.access_token);
+          if (refreshData.refresh_token) {
+            localStorage.setItem('refresh_token', refreshData.refresh_token);
+          }
+
           const updatedUser = {
             ...user,
             access_token: refreshData.access_token,
-            refresh_token: refreshData.refresh_token || user.refresh_token,
+            refresh_token: refreshData.refresh_token || rToken,
           };
           localStorage.setItem('pm_user', JSON.stringify(updatedUser));
           
@@ -105,6 +114,8 @@ export async function apiRequest(endpoint, options = {}) {
 
 function handleLogout() {
   localStorage.removeItem('pm_user');
+  localStorage.removeItem('access_token');
+  localStorage.removeItem('refresh_token');
   window.dispatchEvent(new Event('storage'));
   window.location.href = '/login';
 }
