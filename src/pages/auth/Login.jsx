@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import { useAuth, ROLES } from '../../context/AuthContext';
+import { adminLogin } from '../../services/userService';
 
 const DEMO_USERS = [
   { id: 1, name: 'Ahmad Al-Rashid', role: ROLES.ADMIN, email: 'admin@propmanager.com' },
@@ -39,10 +40,10 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!email) {
+    if (!email || !password) {
       Swal.fire({
         title: 'Fields Required',
-        text: 'Please fill in the email field.',
+        text: 'Please fill in both email and password fields.',
         icon: 'warning',
         confirmButtonColor: '#002B5C'
       });
@@ -51,21 +52,41 @@ export default function Login() {
     setLoading(true);
     setError('');
 
-    // Static Authentication Flow
-    setTimeout(() => {
-      setLoading(false);
-      const trimmedEmail = email.trim().toLowerCase();
-      const demoUser = DEMO_USERS.find(u => u.email.toLowerCase() === trimmedEmail);
-      
-      // Default to Administrator if email is not in demo list
-      const userData = demoUser ? demoUser : {
-        id: 1,
-        name: 'Administrator',
-        role: ROLES.ADMIN,
-        email: email.trim()
+    try {
+      // Call the admin login API
+      console.log('[v0] Attempting login with email:', email);
+      const response = await adminLogin(email, password);
+      console.log('[v0] Login response:', response);
+
+      // Extract user data from response
+      const userData = {
+        id: response.user?.id,
+        name: response.user?.full_name || response.user?.name,
+        full_name: response.user?.full_name,
+        email: response.user?.email,
+        role: response.user?.role,
+        phone_number: response.user?.phone_number,
+        whatsapp_number: response.user?.whatsapp_number,
+        is_phone_verified: response.user?.is_phone_verified,
+        is_email_verified: response.user?.is_email_verified,
+        status: response.user?.status,
+        created_at: response.user?.created_at,
+        last_login: response.user?.last_login,
       };
 
+      // Store tokens in localStorage for future API calls
+      if (response.access_token) {
+        localStorage.setItem('access_token', response.access_token);
+        console.log('[v0] Access token stored');
+      }
+      if (response.refresh_token) {
+        localStorage.setItem('refresh_token', response.refresh_token);
+        console.log('[v0] Refresh token stored');
+      }
+
+      // Update auth context
       login(userData);
+      console.log('[v0] User logged in successfully:', userData);
 
       Swal.fire({
         title: 'Welcome Back!',
@@ -79,10 +100,33 @@ export default function Login() {
           popup: 'rounded-3'
         }
       }).then(() => {
-        const dashboardRoute = ROLE_DASHBOARDS[userData.role] || '/dashboard';
+        // Map role to dashboard route
+        const roleDashboard = {
+          'admin': '/admin/dashboard',
+          'property_manager': '/property/dashboard',
+          'management': '/management/dashboard',
+          'booking_team': '/booking/dashboard',
+          'tenant_management': '/tenant/list',
+          'maintenance_manager': '/maintenance/dashboard',
+          'maintenance_staff': '/mstaff/tasks',
+          'accounts_team': '/accounts/dashboard',
+          'support_team': '/support/inbox',
+        };
+        const dashboardRoute = roleDashboard[userData.role] || '/dashboard';
         navigate(dashboardRoute);
       });
-    }, 600);
+    } catch (err) {
+      console.error('[v0] Login error:', err);
+      setLoading(false);
+      const errorMessage = err.message || 'Login failed. Please check your credentials.';
+      setError(errorMessage);
+      Swal.fire({
+        title: 'Login Failed',
+        text: errorMessage,
+        icon: 'error',
+        confirmButtonColor: '#002B5C'
+      });
+    }
   };
 
   return (
