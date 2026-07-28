@@ -1,32 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import Swal from 'sweetalert2';
-import { useAuth, ROLES } from '../../context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 import { adminLogin } from '../../services/userService';
-
-const DEMO_USERS = [
-  { id: 1, name: 'Ahmad Al-Rashid', role: ROLES.ADMIN, email: 'admin@propmanager.com' },
-  { id: 2, name: 'Sara Khalid', role: ROLES.PROPERTY_MANAGER, email: 'property@propmanager.com' },
-  { id: 3, name: 'Mohammed Hassan', role: ROLES.MANAGEMENT, email: 'management@propmanager.com' },
-  { id: 4, name: 'Fatima Al-Zahra', role: ROLES.BOOKING_TEAM, email: 'booking@propmanager.com' },
-  { id: 5, name: 'Omar Yusuf', role: ROLES.TENANT_MANAGEMENT, email: 'tenant@propmanager.com' },
-  { id: 6, name: 'Layla Ahmed', role: ROLES.MAINTENANCE_MANAGER, email: 'maintenance@propmanager.com' },
-  { id: 7, name: 'Khalid Ibrahim', role: ROLES.MAINTENANCE_STAFF, email: 'mstaff@propmanager.com' },
-  { id: 8, name: 'Nour Al-Din', role: ROLES.ACCOUNTS_TEAM, email: 'accounts@propmanager.com' },
-  { id: 9, name: 'Yasmine Tariq', role: ROLES.SUPPORT_TEAM, email: 'support@propmanager.com' },
-];
-
-const ROLE_DASHBOARDS = {
-  [ROLES.ADMIN]: '/admin/dashboard',
-  [ROLES.PROPERTY_MANAGER]: '/property/dashboard',
-  [ROLES.MANAGEMENT]: '/management/dashboard',
-  [ROLES.BOOKING_TEAM]: '/booking/dashboard',
-  [ROLES.TENANT_MANAGEMENT]: '/tenant/list',
-  [ROLES.MAINTENANCE_MANAGER]: '/maintenance/dashboard',
-  [ROLES.MAINTENANCE_STAFF]: '/mstaff/tasks',
-  [ROLES.ACCOUNTS_TEAM]: '/accounts/dashboard',
-  [ROLES.SUPPORT_TEAM]: '/support/inbox',
-};
 
 export default function Login() {
   const navigate = useNavigate();

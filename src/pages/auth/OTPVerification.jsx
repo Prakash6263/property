@@ -34,13 +34,21 @@ export default function OTPVerification() {
     const code = otp.join('');
     if (code.length < 6) { setError('Please enter the 6-digit OTP'); return; }
     setLoading(true);
-    await new Promise(r => setTimeout(r, 800));
-    if (code === '123456') {
-      navigate('/dashboard');
-    } else {
-      setError('Invalid OTP. Try 123456 for demo.');
+    setError('');
+    
+    try {
+      // TODO: Call OTP verification API endpoint here
+      console.log('[v0] Verifying OTP:', code);
+      
+      // Placeholder for actual API call
+      await new Promise(r => setTimeout(r, 800));
+      
+      setError('OTP verification is not yet configured. Please contact support.');
+    } catch (err) {
+      setError(err.message || 'Failed to verify OTP');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleResend = () => {
